@@ -389,45 +389,6 @@ class MetricsService:
                 if len(numeric_columns) > 0:
                     total_leads = df_leads.iloc[0][numeric_columns[0]]
             
-            # Facebook CAC to LTV calculation
-            try:
-                cac_ltv_query = facebook_cac_to_ltv_summary_sql(start_dt, end_dt)
-                df_cac_ltv = self.execute_query(cac_ltv_query)
-                
-                if not df_cac_ltv.empty:
-                    row = df_cac_ltv.iloc[0]
-                    cac = row.get('cac', 0)
-                    ltv = row.get('ltv', 0)
-                    cac_to_ltv_ratio = row.get('cac_to_ltv_ratio', 0)
-                    
-                    message = f"Facebook CAC: ${cac:.2f}, LTV: ${ltv:.2f}, Ratio: {cac_to_ltv_ratio:.2f}"
-                    
-                    facebook_cac_to_ltv = MetricResponse(
-                        value=float(cac_to_ltv_ratio),
-                        numerator=int(ltv),
-                        denominator=int(cac),
-                        status="ok",
-                        message=message
-                    )
-                else:
-                    facebook_cac_to_ltv = MetricResponse(
-                        value=None,
-                        numerator=0,
-                        denominator=0,
-                        status="error",
-                        message="No Facebook CAC to LTV data available"
-                    )
-                
-            except Exception as e:
-                logger.error(f"Error calculating Facebook CAC to LTV ratio: {e}")
-                facebook_cac_to_ltv = MetricResponse(
-                    value=None,
-                    numerator=0,
-                    denominator=0,
-                    status="error",
-                    message=f"Error calculating Facebook CAC to LTV ratio: {str(e)}"
-                )
-            
             return {
                 'facebook_lead_ads_total': MetricResponse(
                     value=float(total_leads),
@@ -435,10 +396,8 @@ class MetricsService:
                     denominator=1,
                     status="ok",
                     message="Total Facebook lead ads in selected date range"
-                ),
-                'facebook_cac_to_ltv_ratio': facebook_cac_to_ltv
+                )
             }
-            
         except Exception as e:
             logger.error(f"Error calculating Facebook metrics: {e}")
             return {
@@ -448,13 +407,6 @@ class MetricsService:
                     denominator=0,
                     status="error",
                     message=f"Error calculating Facebook metrics: {str(e)}"
-                ),
-                'facebook_cac_to_ltv_ratio': MetricResponse(
-                    value=None,
-                    numerator=0,
-                    denominator=0,
-                    status="error",
-                    message=f"Error calculating Facebook CAC to LTV ratio: {str(e)}"
                 )
             }
 
