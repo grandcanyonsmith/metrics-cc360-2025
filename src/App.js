@@ -274,14 +274,20 @@ function App() {
     
     return (
       <div className="space-y-2">
-        {data.slice(0, 5).map((item, index) => (
-          <div key={index} className="flex justify-between items-center">
-            <span className="font-medium">{item.platform}</span>
-            <span className="text-sm text-gray-600">
-              {item.event_count.toLocaleString()} events ({item.unique_users} users)
-            </span>
-          </div>
-        ))}
+        {data.slice(0, 5).map((item, index) => {
+          const platform = item.PLATFORM || item.platform || 'Unknown';
+          const eventCount = item.EVENT_COUNT || item.event_count || item.COUNT || item.count || 0;
+          const uniqueUsers = item.UNIQUE_USERS || item.unique_users || item.USERS || item.users || 0;
+          
+          return (
+            <div key={index} className="flex justify-between items-center">
+              <span className="font-medium">{platform}</span>
+              <span className="text-sm text-gray-600">
+                {eventCount.toLocaleString()} events ({uniqueUsers} users)
+              </span>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -290,18 +296,20 @@ function App() {
   const renderParetoBreakdown = (data) => {
     if (!data || data.length === 0) return <p className="text-gray-500">No data available</p>;
     
-    const total = data.reduce((sum, item) => sum + item.count, 0);
+    const total = data.reduce((sum, item) => sum + (item.COUNT || item.count || 0), 0);
     
     return (
       <div className="space-y-2">
         {data.slice(0, 5).map((item, index) => {
-          const percentage = ((item.count / total) * 100).toFixed(1);
+          const count = item.COUNT || item.count || 0;
+          const reason = item.REASON || item.reason || 'Unknown';
+          const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : '0.0';
           return (
             <div key={index} className="space-y-1">
               <div className="flex justify-between items-center">
-                <span className="font-medium">{item.reason}</span>
+                <span className="font-medium">{reason}</span>
                 <span className="text-sm text-gray-600">
-                  {item.count.toLocaleString()} ({percentage}%)
+                  {count.toLocaleString()} ({percentage}%)
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
